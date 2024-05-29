@@ -1,5 +1,6 @@
 package org.zerock;
 
+import com.querydsl.core.BooleanBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.zerock.domain.Board;
+import org.zerock.domain.QBoard;
 import org.zerock.persistence.BoardRepository;
 
 import java.util.Arrays;
@@ -137,5 +139,34 @@ class Boot03ApplicationTests {
         Pageable pageable = PageRequest.of(0 , 10);
 
         repo.findByPage(pageable).forEach(board -> System.out.println("board = " + board));
+    }
+    @Test
+    void testPredicate() {
+
+        String type = "t";
+        String keyword = "17";
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        QBoard board = QBoard.board;
+
+        if(type.equals("t")){
+            builder.and(board.title.like("%" + keyword + "%"));
+        }
+
+        // bno > 0
+        builder.and(board.bno.gt(0L));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Page<Board> result = repo.findAll(builder , pageable);
+
+        System.out.println("PAGE SIZE : " + result.getSize());
+        System.out.println("TOTAL PAGES : " + result.getTotalPages());
+        System.out.println("TOTAL COUNT : " + result.nextPageable());
+
+       List<Board> list = result.getContent();
+
+       list.forEach(b -> System.out.println(b));
     }
 }
